@@ -3,33 +3,27 @@ from graphics import *
 import time
 from math import sin, cos, sqrt
 
-
-def pos_at_t(center_x, center_y, orbit_radius_au, angular_v, t):
-    au_in_pixels = 50
-    program_t = t * 5_000_000
-    return [
-        center_x + orbit_radius_au * au_in_pixels * cos(angular_v * program_t),
-        center_y + orbit_radius_au * au_in_pixels * sin(angular_v * program_t)
-    ]
+au_in_pixels = 50
 
 
 #orbit_radius: AU, radius is planet_radius in pixels
 def create_planet(sun_x, sun_y, orbit_radius_au, color, size, mass, win):
     orbit_radius_m = orbit_radius_au * 1.496e11
     lin_speed = sqrt(6.6743e-11 * 1.989e30 / orbit_radius_m)
-    angular_v = lin_speed / orbit_radius_m
-    x, y = pos_at_t(sun_x, sun_y, orbit_radius_m, angular_v, 0)    
+    speed_x = 0
+    speed_y = lin_speed
+    x = sun_x + orbit_radius_au * au_in_pixels
+    y = sun_y
     sprite = Circle(Point(x, y), size)
     sprite.setFill(color)
     sprite.draw(win)
 
-
     planet = {
+        'mass': mass,
         'x': x,
         'y': y,
-        'orbit_radius_au': orbit_radius_au,
-        'angular_v': angular_v,
-        'mass': mass,
+        'speed_x': speed_x,
+        'speed_y': speed_y,
         'sprite': sprite   
     }
     return planet
