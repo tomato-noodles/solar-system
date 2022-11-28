@@ -3,15 +3,21 @@ from graphics import *
 import time
 from math import sin, cos, sqrt
 
+
 au_in_pixels = 50
+m_per_pixel = 1.496e11 / au_in_pixels  
+t_scale = 5_000_000
+g = 6.6743e-11 
+sun_m = 1.989e30
+
+def square(x):
+    return x * x
 
 
 #orbit_radius: AU, radius is planet_radius in pixels
-def create_planet(sun_x, sun_y, orbit_radius_au, color, size, mass, win):
-    orbit_radius_m = orbit_radius_au * 1.496e11
-    lin_speed = sqrt(6.6743e-11 * 1.989e30 / orbit_radius_m)
+def create_planet(sun_x, sun_y, orbit_radius_au, color, size, mass, init_speed, win):
     speed_x = 0
-    speed_y = lin_speed
+    speed_y = init_speed
     x = sun_x + orbit_radius_au * au_in_pixels
     y = sun_y
     sprite = Circle(Point(x, y), size)
@@ -27,7 +33,7 @@ def create_planet(sun_x, sun_y, orbit_radius_au, color, size, mass, win):
         'sprite': sprite   
     }
     return planet
-    
+
 #laptop_res 1270, 620
 def main():
     width = 1800
@@ -35,7 +41,6 @@ def main():
     sun_x = width/2
     sun_y = height/2
     frame_rate = 120
-    t = 0
     dt = 1 / frame_rate
     win = GraphWin("My Solar System", width, height)    
     win.setBackground("black")
@@ -105,11 +110,15 @@ def main():
 
     while True:
         time.sleep(dt)
-        t += dt
+        scaled_dt = dt * t_scale 
+
         for p in planets:
             old_x = p['x'] 
-            old_y = p['y'] 
-            p['x'], p['y'] = pos_at_t(sun_x, sun_y, p['orbit_radius_au'], p['angular_v'], t)
+            old_y = p['y']
+            r_squared = square(sun_x - old_x) + square(sun_y - old_y)
+            a = g * sun_m / r_squared
+            p['x'] = old_x + scaled_dt * p['speed_x'] / m_per_pixel 
+            p['y'] = old_y + scaled_dt * p['speed_y'] / m_per_pixel
             p['sprite'].move(p['x'] - old_x, p['y'] - old_y)
 
 main()
