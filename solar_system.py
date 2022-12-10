@@ -7,7 +7,7 @@ from math import sin, cos, sqrt
 au_in_pixels = 50
 m_per_pixel = 1.496e11 / au_in_pixels  
 t_scale = 5_000_000
-g = 6.6743e-11 
+G = 6.6743e-11 
 sun_m = 1.989e30
 
 def square(x):
@@ -36,8 +36,8 @@ def create_planet(sun_x, sun_y, orbit_radius_au, color, size, mass, init_speed, 
 
 #laptop_res 1270, 620
 def main():
-    width = 1800
-    height = 1000
+    width = 1270
+    height = 620
     sun_x = width/2
     sun_y = height/2
     frame_rate = 120
@@ -108,17 +108,28 @@ def main():
     planets = [mercury, venus, earth, mars, jupiter, saturn, uranus, neptune]
 
 
+    scaled_dt = dt * t_scale 
     while True:
         time.sleep(dt)
-        scaled_dt = dt * t_scale 
 
         for p in planets:
             old_x = p['x'] 
             old_y = p['y']
-            r_squared = square(sun_x - old_x) + square(sun_y - old_y)
-            a = g * sun_m / r_squared
-            p['x'] = old_x + scaled_dt * p['speed_x'] / m_per_pixel 
-            p['y'] = old_y + scaled_dt * p['speed_y'] / m_per_pixel
+            r_x = (sun_x - old_x) * m_per_pixel
+            r_y = (sun_y - old_y) * m_per_pixel
+            r_squared = square(r_x) + square(r_y)
+            r = sqrt(r_squared)
+            a = G * sun_m / r_squared
+            a_x = a * r_x / r
+            a_y = a * r_y / r
+            speed_x = p['speed_x'] + a_x * scaled_dt
+            speed_y = p['speed_y'] + a_y * scaled_dt
+            avg_speed_x = (speed_x + p['speed_x']) / 2
+            avg_speed_y = (speed_y + p['speed_y']) / 2
+            p['speed_x'] = speed_x
+            p['speed_y'] = speed_y 
+            p['x'] = old_x + scaled_dt * avg_speed_x / m_per_pixel 
+            p['y'] = old_y + scaled_dt * avg_speed_y / m_per_pixel
             p['sprite'].move(p['x'] - old_x, p['y'] - old_y)
 
 main()
